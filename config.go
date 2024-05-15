@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// Config defines the config for middleware.
+// Config defines the config for the pagination middleware.
 type Config struct {
 	// Next defines a function to skip this middleware when returned true.
 	//
@@ -29,7 +29,6 @@ var ConfigDefault = Config{
 	DefaultLimit: 10,
 }
 
-// Helper function to set default values
 func configDefault(config ...Config) Config {
 	// Return default config if nothing provided
 	if len(config) < 1 {
