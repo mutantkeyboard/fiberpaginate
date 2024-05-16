@@ -21,11 +21,11 @@ func New(config ...Config) fiber.Handler {
 			return c.Next()
 		}
 
-		page := c.QueryInt("page", cfg.DefaultPage)
+		page := c.QueryInt(cfg.PageKey, cfg.DefaultPage)
 
-		limit := c.QueryInt("limit", cfg.DefaultLimit)
+		limit := c.QueryInt(cfg.LimitKey, cfg.DefaultLimit)
 
-		c.Locals(pageInfoKey, newPageInfo(page, limit))
+		c.Locals(pageInfoKey, NewPageInfo(page, limit))
 
 		return c.Next()
 	}
@@ -39,21 +39,4 @@ func FromContext(c *fiber.Ctx) (*PageInfo, bool) {
 		return fiberpaginate, true
 	}
 	return nil, false
-}
-
-type PageInfo struct {
-	Page  int
-	Limit int
-}
-
-func newPageInfo(page, limit int) *PageInfo {
-	return &PageInfo{
-		Page:  page,
-		Limit: limit,
-	}
-}
-
-// Offset returns the offset for the current page.
-func (p *PageInfo) Offset() int {
-	return (p.Page - 1) * p.Limit
 }

@@ -11,12 +11,24 @@ type Config struct {
 	// Optional. Default: nil
 	Next func(c *fiber.Ctx) bool
 
+	// PageKey is the key for the page number in the query string.
+	//
+	// Optional. Default: "page"
+	PageKey string
+
 	// DefaultPage is the default page number to use when not provided by the client.
+	// If the page number is less than 1, it will be set to the default page number, 1.
 	//
 	// Optional. Default: 1
 	DefaultPage int
 
+	// LimitKey is the key for the limit number in the query string.
+	//
+	// Optional. Default: "limit"
+	LimitKey string
+
 	// DefaultLimit is the default limit to use when not provided by the client.
+	// If the limit is less than 1, it will be set to the default limit, 10.
 	//
 	// Optional. Default: 10
 	DefaultLimit int
@@ -25,7 +37,9 @@ type Config struct {
 // ConfigDefault is the default config
 var ConfigDefault = Config{
 	Next:         nil,
+	PageKey:      "page",
 	DefaultPage:  1,
+	LimitKey:     "limit",
 	DefaultLimit: 10,
 }
 
@@ -42,8 +56,14 @@ func configDefault(config ...Config) Config {
 	if cfg.Next == nil {
 		cfg.Next = ConfigDefault.Next
 	}
+	if cfg.PageKey == "" {
+		cfg.PageKey = ConfigDefault.PageKey
+	}
 	if cfg.DefaultLimit < 1 {
 		cfg.DefaultLimit = ConfigDefault.DefaultLimit
+	}
+	if cfg.LimitKey == "" {
+		cfg.LimitKey = ConfigDefault.LimitKey
 	}
 	if cfg.DefaultPage < 1 {
 		cfg.DefaultPage = ConfigDefault.DefaultPage

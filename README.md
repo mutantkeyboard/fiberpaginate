@@ -36,7 +36,9 @@ go get -u github.com/garrettladley/fiberpaginate
 | Property            | Type                        | Description                                                                                                                   | Default                |
 |:--------------------|:----------------------------|:------------------------------------------------------------------------------------------------------------------------------|:-----------------------|
 | Next              | `func(*fiber.Ctx) bool`     | Next defines a function to skip this middleware when returned true.                                                                                     | `nil`                  |
+| PageKey              | `string`     | PageKey is the key for the page number in the query. string                                                                                     | `"page"`                  |
 | DefaultPage    | `int`             | DefaultPage is the default page number to use when not provided by the client.                                                   | `1`       |
+| LimitKey              | `string`     | LimitKey is the key for the limit number in the query. string                                                                                     | `"limit"`                  |
 | DefaultLimit        | `int`                  | DefaultLimit is the default limit to use when not provided by the client.                                                                   | `10`                  |
 
 ## Example
@@ -68,7 +70,7 @@ func main() {
 			fiber.Map{
 				"page":   pageInfo.Page,
 				"limit":  pageInfo.Limit,
-				"offset": pageInfo.Offset(),
+				"start": pageInfo.Start(),
 			},
 		)
 	})
@@ -110,7 +112,7 @@ func main() {
 			fiber.Map{
 				"page":   pageInfo.Page, // 1
 				"limit":  pageInfo.Limit, // 10
-				"offset": pageInfo.Offset(), // 0
+				"start": pageInfo.Start(), // 0
 			},
 		)
 	})
@@ -151,7 +153,7 @@ func main() {
 			fiber.Map{
 				"page":   pageInfo.Page, // 0
 				"limit":  pageInfo.Limit, // 0
-				"offset": pageInfo.Offset(), // 0
+				"start": pageInfo.Start(), // 0
 			},
 		)
 	})

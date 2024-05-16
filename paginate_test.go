@@ -198,8 +198,8 @@ func Test_Paginate_Next(t *testing.T) {
 	utils.AssertEqual(t, fiber.StatusBadRequest, resp.StatusCode)
 }
 
-// go test -run Test_PaginateConfig
-func Test_PaginateConfig(t *testing.T) {
+// go test -run Test_PaginateConfigDefaultPageDefaultLimit
+func Test_PaginateConfigDefaultPageDefaultLimit(t *testing.T) {
 	t.Parallel()
 	app := fiber.New()
 	app.Use(New(Config{
@@ -239,8 +239,49 @@ func Test_PaginateConfig(t *testing.T) {
 	utils.AssertEqual(t, 1000, respBody.Limit)
 }
 
-// go test -run Test_PaginateNegativeConfigValues
-func Test_PaginateNegativeConfigValues(t *testing.T) {
+// go test -run Test_PaginateConfigPageKeyLimitKey
+func Test_PaginateConfigPageKeyLimitKey(t *testing.T) {
+	t.Parallel()
+	app := fiber.New()
+	app.Use(New(Config{
+		PageKey:  "p",
+		LimitKey: "l",
+	}))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		pageInfo, ok := FromContext(c)
+		if !ok {
+			return fiber.ErrBadRequest
+		}
+
+		return c.JSON(Response{
+			Page:  pageInfo.Page,
+			Limit: pageInfo.Limit,
+		})
+	})
+
+	resp, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/?p=2&l=20", nil))
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, fiber.StatusOK, resp.StatusCode)
+
+	body := resp.Body
+	defer func() {
+		closeErr := body.Close()
+		utils.AssertEqual(t, nil, closeErr)
+	}()
+
+	bodyBytes, err := io.ReadAll(body)
+	utils.AssertEqual(t, nil, err)
+
+	var respBody Response
+	utils.AssertEqual(t, nil, json.Unmarshal(bodyBytes, &respBody))
+
+	utils.AssertEqual(t, 2, respBody.Page)
+	utils.AssertEqual(t, 20, respBody.Limit)
+}
+
+// go test -run Test_PaginateNegativeDefaultPageDefaultLimitValues
+func Test_PaginateNegativeDefaultPageDefaultLimitValues(t *testing.T) {
 	t.Parallel()
 	app := fiber.New()
 	app.Use(New(Config{
