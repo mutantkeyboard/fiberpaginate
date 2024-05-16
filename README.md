@@ -36,10 +36,11 @@ go get -u github.com/garrettladley/fiberpaginate
 | Property            | Type                        | Description                                                                                                                   | Default                |
 |:--------------------|:----------------------------|:------------------------------------------------------------------------------------------------------------------------------|:-----------------------|
 | Next              | `func(*fiber.Ctx) bool`     | Next defines a function to skip this middleware when returned true.                                                                                     | `nil`                  |
-| PageKey              | `string`     | PageKey is the key for the page number in the query. string                                                                                     | `"page"`                  |
-| DefaultPage    | `int`             | DefaultPage is the default page number to use when not provided by the client.                                                   | `1`       |
-| LimitKey              | `string`     | LimitKey is the key for the limit number in the query. string                                                                                     | `"limit"`                  |
-| DefaultLimit        | `int`                  | DefaultLimit is the default limit to use when not provided by the client.                                                                   | `10`                  |
+| PageKey              | `string`     | PageKey is the key for the page number in the query string.                                                                                     | `"page"`                  |
+| DefaultPage    | `int`             | DefaultPage is the default page number to use when not provided as a query paramater in the url. If the page number is less than 1, it will be set to the default page number, 1.                                            | `1`       |
+| LimitKey              | `string`     | LimitKey is the key for the limit number in the query string.                                                                                     | `"limit"`                  |
+| DefaultLimit        | `int`                  | DefaultLimit is the default limit to use when not provided as a query paramater in the url. If the limit is less than 1, it will be set to the default limit, 10.                                                                  | `10`                  |
+
 
 ## Example
 

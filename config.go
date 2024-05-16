@@ -16,7 +16,7 @@ type Config struct {
 	// Optional. Default: "page"
 	PageKey string
 
-	// DefaultPage is the default page number to use when not provided by the client.
+	// DefaultPage is the default page number to use when not provided as a query parameter in the url.
 	// If the page number is less than 1, it will be set to the default page number, 1.
 	//
 	// Optional. Default: 1
@@ -27,7 +27,7 @@ type Config struct {
 	// Optional. Default: "limit"
 	LimitKey string
 
-	// DefaultLimit is the default limit to use when not provided by the client.
+	// DefaultLimit is the default limit to use when not provided as a query parameter in the url.
 	// If the limit is less than 1, it will be set to the default limit, 10.
 	//
 	// Optional. Default: 10
