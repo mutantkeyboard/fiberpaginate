@@ -16,6 +16,6 @@ func NewPageInfo(page int, limit int) *PageInfo {
 }
 
 // Start returns the start index based on the current page and limit.
-func (p *PageInfo) Start() int {
+func (p PageInfo) Start() int {
 	return (p.Page - 1) * p.Limit
 }
