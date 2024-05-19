@@ -1,4 +1,4 @@
-module github.com/garrettladley/fiberpaginate/v2
+module github.com/garrettladley/fiberpaginate
 
 go 1.22
 
