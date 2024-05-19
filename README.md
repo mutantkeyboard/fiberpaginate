@@ -28,7 +28,7 @@
 ## Install
 
 ```console
-go get -u github.com/garrettladley/fiberpaginate
+go get -u github.com/garrettladley/fiberpaginate/v2
 ```
 
 ## Config
@@ -50,7 +50,7 @@ package main
 import (
 	"log"
 
-	"github.com/garrettladley/fiberpaginate"
+	"github.com/garrettladley/fiberpaginate/v2"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -91,7 +91,7 @@ package main
 import (
 	"log"
 
-	"github.com/garrettladley/fiberpaginate"
+	"github.com/garrettladley/fiberpaginate/v2"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -132,7 +132,7 @@ package main
 import (
 	"log"
 
-	"github.com/garrettladley/fiberpaginate"
+	"github.com/garrettladley/fiberpaginate/v2"
 	"github.com/gofiber/fiber/v2"
 )
 
