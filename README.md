@@ -284,3 +284,13 @@ func main() {
 
 	log.Fatal(app.Listen(":3000"))
 }
+```
+
+
+## Benchmarks
+
+To run benchmark tests and measure the performance of the pagination middleware, use the following command:
+
+```bash
+go test -bench=. -benchmem
+```

@@ -457,3 +457,53 @@ func Test_PaginateWithMultipleSorting(t *testing.T) {
 		})
 	}
 }
+
+/* BENCHMARK TESTING */
+
+func BenchmarkPaginateMiddleware(b *testing.B) {
+	app := fiber.New()
+	app.Use(New())
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		pageInfo, _ := FromContext(c)
+		return c.JSON(pageInfo)
+	})
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		req := httptest.NewRequest("GET", "/?page=2&limit=20&sort=name,-date", nil)
+		_, err := app.Test(req, -1)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkPaginateMiddlewareWithCustomConfig(b *testing.B) {
+	app := fiber.New()
+	app.Use(New(Config{
+		PageKey:      "p",
+		LimitKey:     "l",
+		SortKey:      "s",
+		DefaultPage:  1,
+		DefaultLimit: 30,
+		DefaultSort:  "id",
+		AllowedSorts: []string{"id", "name", "date"},
+	}))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		pageInfo, _ := FromContext(c)
+		return c.JSON(pageInfo)
+	})
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		req := httptest.NewRequest("GET", "/?p=3&l=25&s=name,-id", nil)
+		_, err := app.Test(req, -1)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
