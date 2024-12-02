@@ -33,16 +33,23 @@ go get -u github.com/garrettladley/fiberpaginate/v2
 
 ## Config
 
-| Property            | Type                        | Description                                                                                                                   | Default                |
-|:--------------------|:----------------------------|:------------------------------------------------------------------------------------------------------------------------------|:-----------------------|
-| Next              | `func(*fiber.Ctx) bool`     | Next defines a function to skip this middleware when returned true.                                                                                     | `nil`                  |
-| PageKey              | `string`     | PageKey is the key for the page number in the query string.                                                                                     | `"page"`                  |
-| DefaultPage    | `int`             | DefaultPage is the default page number to use when not provided as a query paramater in the url. If the page number is less than 1, it will be set to the default page number, 1.                                            | `1`       |
-| LimitKey              | `string`     | LimitKey is the key for the limit number in the query string.                                                                                     | `"limit"`                  |
-| DefaultLimit        | `int`                  | DefaultLimit is the default limit to use when not provided as a query paramater in the url. If the limit is less than 1, it will be set to the default limit, 10.                                                                  | `10`                  |
+| Property     | Type                    | Description                                                                                                                                                              | Default   |
+|--------------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| Next         | `func(*fiber.Ctx) bool` | Next defines a function to skip this middleware when returned true.                                                                                                      | `nil`     |
+| PageKey      | `string`                | PageKey is the key for the page number in the query string.                                                                                                              | `"page"`  |
+| DefaultPage  | `int`                   | DefaultPage is the default page number to use when not provided as a query parameter in the url. If the page number is less than 1, it will be set to the default page number, 1. | `1`       |
+| LimitKey     | `string`                | LimitKey is the key for the limit number in the query string.                                                                                                            | `"limit"` |
+| DefaultLimit | `int`                   | DefaultLimit is the default limit to use when not provided as a query parameter in the url. If the limit is less than 1, it will be set to the default limit, 10.       | `10`      |
+| OffsetKey    | `string`                | OffsetKey is the key for the offset number in the query string.                                                                                                          | `"offset"`|
+| SortKey      | `string`                | SortKey is the key for the sort parameter in the query string.                                                                                                           | `"sort"`  |
+| DefaultSort  | `string`                | DefaultSort is the default sort to use when not provided as a query parameter in the url.                                                                                | `""`      |
+| AllowedSorts | `[]string`              | AllowedSorts is a whitelist of sortable fields. If empty, all fields are allowed.                                                                                        | `nil`     |                                              | `10`                  |
 
 
 ## Example
+
+### Basic Usage with Offset and Sort
+
 
 ```go
 package main
@@ -57,28 +64,90 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use(fiber_pagnate.New())
+	app.Use(fiberpaginate.New(fiberpaginate.Config{
+		PageKey:      "page",
+		LimitKey:     "limit",
+		OffsetKey:    "offset",
+		SortKey:      "sort",
+		DefaultSort:  "id",
+		AllowedSorts: []string{"id", "name", "date"},
+	}))
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		// when given a query string like ?page=2&limit=5,
-		// the middleware will parse the query string and set the values
+		// This will handle query strings like:
+		// ?page=2&limit=10
+		// ?offset=20&limit=10
+		// ?sort=name,-date
 		pageInfo, ok := fiberpaginate.FromContext(c)
 		if !ok {
 			return fiber.ErrBadRequest
 		}
 
-		return c.JSON(
-			fiber.Map{
-				"page":   pageInfo.Page,
-				"limit":  pageInfo.Limit,
-				"start": pageInfo.Start(),
-			},
-		)
+		return c.JSON(fiber.Map{
+			"page":   pageInfo.Page,
+			"limit":  pageInfo.Limit,
+			"offset": pageInfo.Offset,
+			"start":  pageInfo.Start(),
+			"sort":   pageInfo.Sort,
+		})
 	})
 
 	log.Fatal(app.Listen(":3000"))
 }
 ```
+
+## With Custom config
+
+Here, you can use our Config to fine tune values for the middlware
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/garrettladley/fiberpaginate/v2"
+	"github.com/gofiber/fiber/v2"
+)
+
+func main() {
+	app := fiber.New()
+
+	app.Use(fiberpaginate.New(fiberpaginate.Config{
+		PageKey:      "p",
+		LimitKey:     "l",
+		OffsetKey:    "o",
+		SortKey:      "s",
+		DefaultPage:  1,
+		DefaultLimit: 20,
+		DefaultSort:  "created_at",
+		AllowedSorts: []string{"id", "name", "created_at"},
+	}))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		// This will handle query strings like:
+		// ?p=2&l=10
+		// ?o=40&l=20
+		// ?s=name,-created_at
+		pageInfo, ok := fiberpaginate.FromContext(c)
+		if !ok {
+			return fiber.ErrBadRequest
+		}
+
+		return c.JSON(fiber.Map{
+			"page":   pageInfo.Page,
+			"limit":  pageInfo.Limit,
+			"offset": pageInfo.Offset,
+			"start":  pageInfo.Start(),
+			"sort":   pageInfo.Sort,
+		})
+	})
+
+	log.Fatal(app.Listen(":3000"))
+}
+
+```
+
 
 ## Note with negative values in the config
 
@@ -101,6 +170,8 @@ func main() {
 	app.Use(fiberpaginate.New(fiberpaginate.Config{
 		DefaultPage:  -1,
 		DefaultLimit: -1,
+		OffsetKey:    "offset",
+		SortKey:      "sort",
 	}))
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -109,13 +180,13 @@ func main() {
 			return fiber.ErrBadRequest
 		}
 
-		return c.JSON(
-			fiber.Map{
-				"page":   pageInfo.Page, // 1
-				"limit":  pageInfo.Limit, // 10
-				"start": pageInfo.Start(), // 0
-			},
-		)
+		return c.JSON(fiber.Map{
+			"page":   pageInfo.Page,   // Will be 1
+			"limit":  pageInfo.Limit,  // Will be 10
+			"offset": pageInfo.Offset,
+			"start":  pageInfo.Start(),
+			"sort":   pageInfo.Sort,
+		})
 	})
 
 	log.Fatal(app.Listen(":3000"))
@@ -139,26 +210,77 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use(fiberpaginate.New())
+	app.Use(fiberpaginate.New(fiberpaginate.Config{
+		OffsetKey: "offset",
+		SortKey:   "sort",
+	}))
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		// when given a query string like ?page=foo&limit=bar,
+		// When given a query string like ?page=foo&limit=bar&offset=baz&sort=qux,
 		// the middleware will parse the query string and set 
-		// the values to 0 due to the invalid types
+		// the values to 0 or default values due to the invalid types
 		pageInfo, ok := fiberpaginate.FromContext(c)
 		if !ok {
 			return fiber.ErrBadRequest
 		}
 
-		return c.JSON(
-			fiber.Map{
-				"page":   pageInfo.Page, // 0
-				"limit":  pageInfo.Limit, // 0
-				"start": pageInfo.Start(), // 0
-			},
-		)
+		return c.JSON(fiber.Map{
+			"page":   pageInfo.Page,   // Will be 1 (default)
+			"limit":  pageInfo.Limit,  // Will be 10 (default)
+			"offset": pageInfo.Offset, // Will be 0
+			"start":  pageInfo.Start(),
+			"sort":   pageInfo.Sort,   // Will be empty or default
+		})
 	})
 
 	log.Fatal(app.Listen(":3000"))
 }
 ```
+### Generating Next Page URL
+
+This example shows how to use the `NextPageUrl` method to generate a URL for the next page of results as implemented in the `page_info.go` file.
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/garrettladley/fiberpaginate/v2"
+	"github.com/gofiber/fiber/v2"
+)
+
+func main() {
+	app := fiber.New()
+
+	app.Use(fiberpaginate.New(fiberpaginate.Config{
+		PageKey:      "page",
+		LimitKey:     "limit",
+		SortKey:      "sort",
+		DefaultSort:  "id",
+		AllowedSorts: []string{"id", "name", "date"},
+	}))
+
+	app.Get("/users", func(c *fiber.Ctx) error {
+		pageInfo, ok := fiberpaginate.FromContext(c)
+		if !ok {
+			return fiber.ErrBadRequest
+		}
+
+		// Assume we have a function that fetches users based on pageInfo
+		// users := fetchUsers(pageInfo)
+
+		nextPageURL := pageInfo.NextPageURL("/users")
+
+		return c.JSON(fiber.Map{
+			"page":        pageInfo.Page,
+			"limit":       pageInfo.Limit,
+			"start":       pageInfo.Start(),
+			"sort":        pageInfo.Sort,
+			"nextPageURL": nextPageURL,
+			// "users":       users,
+		})
+	})
+
+	log.Fatal(app.Listen(":3000"))
+}
