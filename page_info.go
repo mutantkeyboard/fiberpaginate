@@ -2,7 +2,6 @@ package fiberpaginate
 
 import "fmt"
 
-
 // SortOrder represents sort order
 type SortOrder string
 
@@ -39,7 +38,7 @@ type PageInfo struct {
 	// Offset is the offset of the current page.
 	Offset int
 	// Sort is the sort order.
-	Sort   []SortField
+	Sort []SortField
 }
 
 func NewPageInfo(page int, limit int, offset int, sort []SortField) *PageInfo {
@@ -47,7 +46,7 @@ func NewPageInfo(page int, limit int, offset int, sort []SortField) *PageInfo {
 		Page:   page,
 		Limit:  limit,
 		Offset: offset,
-		Sort: sort,
+		Sort:   sort,
 	}
 }
 
@@ -61,8 +60,8 @@ func (p *PageInfo) Start() int {
 
 // SortBy adds a new sort field to the sort order.
 func (p *PageInfo) SortBy(field string, order SortOrder) *PageInfo {
-    p.Sort = append(p.Sort, SortField{Field: field, Order: order})
-    return p
+	p.Sort = append(p.Sort, SortField{Field: field, Order: order})
+	return p
 }
 
 // NextPageURL returns the URL for the next page given the baseURL.
@@ -71,5 +70,5 @@ func (p *PageInfo) SortBy(field string, order SortOrder) *PageInfo {
 // with a limit of 10, the returned URL would be
 // "https://example.com/users?page=2&limit=10".
 func (p *PageInfo) NextPageURL(baseURL string) string {
-    return fmt.Sprintf("%s?page=%d&limit=%d", baseURL, p.Page+1, p.Limit)
+	return fmt.Sprintf("%s?page=%d&limit=%d", baseURL, p.Page+1, p.Limit)
 }

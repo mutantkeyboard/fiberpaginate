@@ -11,10 +11,10 @@ import (
 )
 
 type Response struct {
-	Page   int `json:"page"`
-	Limit  int `json:"limit"`
-	Offset int `json:"offset"`
-	Start  int `json:"start"`
+	Page   int         `json:"page"`
+	Limit  int         `json:"limit"`
+	Offset int         `json:"offset"`
+	Start  int         `json:"start"`
 	Sort   []SortField `json:"sort"`
 }
 
@@ -63,44 +63,44 @@ func Test_PaginateWithQueries(t *testing.T) {
 }
 
 func Test_PaginateWithOffset(t *testing.T) {
-    t.Parallel()
-    app := fiber.New()
+	t.Parallel()
+	app := fiber.New()
 
-    app.Use(New())
+	app.Use(New())
 
-    app.Get("/", func(c *fiber.Ctx) error {
-        pageInfo, ok := FromContext(c)
-        if !ok {
-            return fiber.ErrBadRequest
-        }
+	app.Get("/", func(c *fiber.Ctx) error {
+		pageInfo, ok := FromContext(c)
+		if !ok {
+			return fiber.ErrBadRequest
+		}
 
-        return c.JSON(Response{
-            Page:   pageInfo.Page,
-            Limit:  pageInfo.Limit,
-            Offset: pageInfo.Offset,
-            Start:  pageInfo.Start(),
-            Sort:   pageInfo.Sort,
-        })
-    })
+		return c.JSON(Response{
+			Page:   pageInfo.Page,
+			Limit:  pageInfo.Limit,
+			Offset: pageInfo.Offset,
+			Start:  pageInfo.Start(),
+			Sort:   pageInfo.Sort,
+		})
+	})
 
-    resp, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/?offset=20&limit=20", nil))
-    utils.AssertEqual(t, nil, err)
-    utils.AssertEqual(t, fiber.StatusOK, resp.StatusCode)
+	resp, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/?offset=20&limit=20", nil))
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, fiber.StatusOK, resp.StatusCode)
 
-    body := resp.Body
-    defer body.Close()
+	body := resp.Body
+	defer body.Close()
 
-    bodyBytes, err := io.ReadAll(body)
-    utils.AssertEqual(t, nil, err)
+	bodyBytes, err := io.ReadAll(body)
+	utils.AssertEqual(t, nil, err)
 
-    var respBody Response
-    utils.AssertEqual(t, nil, json.Unmarshal(bodyBytes, &respBody))
+	var respBody Response
+	utils.AssertEqual(t, nil, json.Unmarshal(bodyBytes, &respBody))
 
-    utils.AssertEqual(t, 1, respBody.Page)
-    utils.AssertEqual(t, 20, respBody.Limit)
-    utils.AssertEqual(t, 20, respBody.Offset)
-    utils.AssertEqual(t, 20, respBody.Start)  // This should be 20, matching the current Start() implementation
-    utils.AssertEqual(t, []SortField{{Field: "id", Order: ASC}}, respBody.Sort)
+	utils.AssertEqual(t, 1, respBody.Page)
+	utils.AssertEqual(t, 20, respBody.Limit)
+	utils.AssertEqual(t, 20, respBody.Offset)
+	utils.AssertEqual(t, 20, respBody.Start) // This should be 20, matching the current Start() implementation
+	utils.AssertEqual(t, []SortField{{Field: "id", Order: ASC}}, respBody.Sort)
 }
 
 // go test -run Test_PaginateCheckDefaultsWhenNoQueries
@@ -452,7 +452,7 @@ func Test_PaginateWithMultipleSorting(t *testing.T) {
 			var result Response
 			err = json.NewDecoder(resp.Body).Decode(&result)
 			utils.AssertEqual(t, nil, err)
-			
+
 			utils.AssertEqual(t, tc.expectedSort, result.Sort)
 		})
 	}

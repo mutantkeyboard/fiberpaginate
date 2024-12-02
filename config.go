@@ -33,7 +33,7 @@ type Config struct {
 	// Optional. Default: 10
 	DefaultLimit int
 
-	/* Sort stuff */ 
+	/* Sort stuff */
 	// SortKey is the key for the sort order in the query string.
 
 	SortKey string

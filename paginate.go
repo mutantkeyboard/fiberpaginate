@@ -19,8 +19,8 @@ const MaxLimit = 100
 func New(config ...Config) fiber.Handler {
 	cfg := configDefault(config...)
 	if cfg.DefaultSort == "" {
-        cfg.DefaultSort = "id"
-    }
+		cfg.DefaultSort = "id"
+	}
 
 	return func(c *fiber.Ctx) error {
 		if cfg.Next != nil && cfg.Next(c) {
@@ -37,7 +37,7 @@ func New(config ...Config) fiber.Handler {
 		offset := c.QueryInt("offset", 0)
 
 		sorts := parseSortQuery(c.Query(cfg.SortKey), cfg.AllowedSorts, cfg.DefaultSort)
-		
+
 		c.Locals(pageInfoKey, NewPageInfo(page, limit, offset, sorts))
 
 		return c.Next()
