@@ -13,8 +13,14 @@ const (
 	pageInfoKey contextKey = 0
 )
 
+// MaxLimit is the maximum limit allowed which prevents excesive memory usage
+const MaxLimit = 100
+
 func New(config ...Config) fiber.Handler {
 	cfg := configDefault(config...)
+	if cfg.DefaultSort == "" {
+        cfg.DefaultSort = "id"
+    }
 
 	return func(c *fiber.Ctx) error {
 		if cfg.Next != nil && cfg.Next(c) {
@@ -24,8 +30,15 @@ func New(config ...Config) fiber.Handler {
 		page := c.QueryInt(cfg.PageKey, cfg.DefaultPage)
 
 		limit := c.QueryInt(cfg.LimitKey, cfg.DefaultLimit)
+		if limit > MaxLimit {
+			limit = MaxLimit
+		}
 
-		c.Locals(pageInfoKey, NewPageInfo(page, limit))
+		offset := c.QueryInt("offset", 0)
+
+		sorts := parseSortQuery(c.Query(cfg.SortKey), cfg.AllowedSorts, cfg.DefaultSort)
+		
+		c.Locals(pageInfoKey, NewPageInfo(page, limit, offset, sorts))
 
 		return c.Next()
 	}
