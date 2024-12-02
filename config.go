@@ -32,6 +32,17 @@ type Config struct {
 	//
 	// Optional. Default: 10
 	DefaultLimit int
+
+	/* Sort stuff */
+	// SortKey is the key for the sort order in the query string.
+
+	SortKey string
+
+	// DefaultSort is the default sort order to use when not provided as a query parameter in the url.
+	DefaultSort string
+
+	// AllowedSorts is the list of allowed sort orders.
+	AllowedSorts []string
 }
 
 // ConfigDefault is the default config
