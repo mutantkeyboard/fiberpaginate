@@ -6,12 +6,16 @@ import (
 
 // The contextKey type is unexported to prevent collisions with context keys defined in
 // other packages.
-type contextKey byte
+type contextKey struct {
+	name string
+}
+
+func (k contextKey) String() string {
+	return "fiberpaginate context value " + k.name
+}
 
 // The keys for the values in context
-const (
-	pageInfoKey contextKey = 0
-)
+var pageInfoKey = contextKey{"pageInfo"}
 
 func New(config ...Config) fiber.Handler {
 	cfg := configDefault(config...)
