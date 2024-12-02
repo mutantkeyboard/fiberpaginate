@@ -41,6 +41,15 @@ type PageInfo struct {
 	Sort []SortField
 }
 
+// NewPageInfo creates a new PageInfo object with the given parameters.
+//
+// page is the current page number.
+//
+// limit is the number of items per page.
+//
+// offset is the offset of the current page.
+//
+// sort is the sort order.
 func NewPageInfo(page int, limit int, offset int, sort []SortField) *PageInfo {
 	return &PageInfo{
 		Page:   page,
