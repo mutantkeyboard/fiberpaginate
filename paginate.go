@@ -6,12 +6,10 @@ import (
 
 // The contextKey type is unexported to prevent collisions with context keys defined in
 // other packages.
-type contextKey byte
+type contextKey struct{}
 
 // The keys for the values in context
-const (
-	pageInfoKey contextKey = 0
-)
+var pageInfoKey = contextKey{}
 
 // MaxLimit is the maximum limit allowed which prevents excesive memory usage
 const MaxLimit = 100
