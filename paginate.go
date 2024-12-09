@@ -6,16 +6,10 @@ import (
 
 // The contextKey type is unexported to prevent collisions with context keys defined in
 // other packages.
-type contextKey struct {
-	name string
-}
-
-func (k contextKey) String() string {
-	return "fiberpaginate context value " + k.name
-}
+type contextKey struct{}
 
 // The keys for the values in context
-var pageInfoKey = contextKey{"pageInfo"}
+var pageInfoKey = contextKey{}
 
 // MaxLimit is the maximum limit allowed which prevents excesive memory usage
 const MaxLimit = 100
