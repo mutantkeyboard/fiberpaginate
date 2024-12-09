@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -407,6 +408,7 @@ func Test_PaginateFromContextWithoutNew(t *testing.T) {
 	utils.AssertEqual(t, []SortField(nil), respBody.Sort)
 }
 
+// go test -run Test_PaginateWithMultipleSorting
 func Test_PaginateWithMultipleSorting(t *testing.T) {
 	t.Parallel()
 	app := fiber.New()
@@ -456,6 +458,66 @@ func Test_PaginateWithMultipleSorting(t *testing.T) {
 			utils.AssertEqual(t, tc.expectedSort, result.Sort)
 		})
 	}
+}
+
+// go test -run TestParseSortQuery
+func TestParseSortQuery(t *testing.T) {
+    tests := []struct {
+        name         string
+        query        string
+        allowedSorts []string
+        defaultSort  string
+        expected     []SortField
+    }{
+        {
+            name:         "Empty query",
+            query:        "",
+            allowedSorts: []string{"id", "name", "date"},
+            defaultSort:  "id",
+            expected:     []SortField{{Field: "id", Order: ASC}},
+        },
+        {
+            name:         "Single allowed field",
+            query:        "name",
+            allowedSorts: []string{"id", "name", "date"},
+            defaultSort:  "id",
+            expected:     []SortField{{Field: "name", Order: ASC}},
+        },
+        {
+            name:         "Multiple fields with mixed order",
+            query:        "name,-date,id",
+            allowedSorts: []string{"id", "name", "date"},
+            defaultSort:  "id",
+            expected: []SortField{
+                {Field: "name", Order: ASC},
+                {Field: "date", Order: DESC},
+                {Field: "id", Order: ASC},
+            },
+        },
+        {
+            name:         "Disallowed field",
+            query:        "email,name",
+            allowedSorts: []string{"id", "name", "date"},
+            defaultSort:  "id",
+            expected:     []SortField{{Field: "name", Order: ASC}},
+        },
+        {
+            name:         "All disallowed fields",
+            query:        "email,phone",
+            allowedSorts: []string{"id", "name", "date"},
+            defaultSort:  "id",
+            expected:     []SortField{{Field: "id", Order: ASC}},
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            result := parseSortQuery(tt.query, tt.allowedSorts, tt.defaultSort)
+            if !reflect.DeepEqual(result, tt.expected) {
+                t.Errorf("parseSortQuery() = %v, want %v", result, tt.expected)
+            }
+        })
+    }
 }
 
 /* BENCHMARK TESTING */
