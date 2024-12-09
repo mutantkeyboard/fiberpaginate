@@ -1,19 +1,11 @@
 package fiberpaginate
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 /* This file contains all the utility and helper functions that can be reused in paginate */
-
-// isAllowedSort returns true if the given sort string is allowed in the given list of allowedSorts,
-// false otherwise.
-func isAllowedSort(sort string, allowedSorts []string) bool {
-	for _, s := range allowedSorts {
-		if s == sort {
-			return true
-		}
-	}
-	return false
-}
 
 // parseSortQuery takes a query string and a list of allowed sorts, and returns a slice of SortFields.
 // If the query string is empty, it returns a slice with a single SortField with the given defaultSort.
@@ -27,7 +19,7 @@ func parseSortQuery(query string, allowedSorts []string, defaultSort string) []S
 	}
 
 	fields := strings.Split(query, ",")
-	var sortFields []SortField
+	sortFields := make([]SortField, 0, len(fields))
 
 	for _, field := range fields {
 		order := ASC
@@ -35,10 +27,10 @@ func parseSortQuery(query string, allowedSorts []string, defaultSort string) []S
 			order = DESC
 			field = field[1:]
 		}
-
-		if isAllowedSort(field, allowedSorts) {
+		if slices.Contains(allowedSorts, field) {
 			sortFields = append(sortFields, SortField{Field: field, Order: order})
 		}
+
 	}
 
 	if len(sortFields) == 0 {
