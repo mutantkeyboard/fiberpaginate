@@ -1,6 +1,9 @@
 package fiberpaginate
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -26,13 +29,22 @@ func New(config ...Config) fiber.Handler {
 		}
 
 		page := c.QueryInt(cfg.PageKey, cfg.DefaultPage)
+		if page < 1 {
+			page = 1
+		}
 
 		limit := c.QueryInt(cfg.LimitKey, cfg.DefaultLimit)
+		if limit < 1 {
+			limit = cfg.DefaultLimit // This will set it to 10 if it's negative or zero
+		}
 		if limit > MaxLimit {
 			limit = MaxLimit
 		}
 
 		offset := c.QueryInt("offset", 0)
+		if offset < 0 {
+			offset = 0
+		}
 
 		sorts := parseSortQuery(c.Query(cfg.SortKey), cfg.AllowedSorts, cfg.DefaultSort)
 
@@ -50,4 +62,37 @@ func FromContext(c *fiber.Ctx) (*PageInfo, bool) {
 		return fiberpaginate, true
 	}
 	return nil, false
+}
+
+// parseSortQuery takes a query string and a list of allowed sorts, and returns a slice of SortFields.
+// If the query string is empty, it returns a slice with a single SortField with the given defaultSort.
+// The query string is split on commas, and each field is checked against the allowedSorts.
+// If a field is not allowed, it is skipped.
+// The order of each field is determined by its prefix, with "-" indicating DESC and no prefix indicating ASC.
+// If no allowed fields are found, the same single-element slice is returned with the defaultSort.
+func parseSortQuery(query string, allowedSorts []string, defaultSort string) []SortField {
+	if query == "" {
+		return []SortField{{Field: defaultSort, Order: ASC}}
+	}
+
+	fields := strings.Split(query, ",")
+	sortFields := make([]SortField, 0, len(fields))
+
+	for _, field := range fields {
+		order := ASC
+		if strings.HasPrefix(field, "-") {
+			order = DESC
+			field = field[1:]
+		}
+		if slices.Contains(allowedSorts, field) {
+			sortFields = append(sortFields, SortField{Field: field, Order: order})
+		}
+
+	}
+
+	if len(sortFields) == 0 {
+		return []SortField{{Field: defaultSort, Order: ASC}}
+	}
+
+	return sortFields
 }

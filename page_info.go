@@ -81,3 +81,17 @@ func (p *PageInfo) SortBy(field string, order SortOrder) *PageInfo {
 func (p *PageInfo) NextPageURL(baseURL string) string {
 	return fmt.Sprintf("%s?page=%d&limit=%d", baseURL, p.Page+1, p.Limit)
 }
+
+// PreviousPageURL returns the URL for the previous page given the baseURL.
+//
+// For example, if baseURL is "https://example.com/users" and the current page is 2
+// with a limit of 10, the returned URL would be
+// "https://example.com/users?page=1&limit=10".
+//
+// If the current page is 1, an empty string will be returned.
+func (p *PageInfo) PreviousPageURL(baseURL string) string {
+	if p.Page > 1 {
+		return fmt.Sprintf("%s?page=%d&limit=%d", baseURL, p.Page-1, p.Limit)
+	}
+	return ""
+}
