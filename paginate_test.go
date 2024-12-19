@@ -12,13 +12,13 @@ import (
 )
 
 type Response struct {
-	Page   int         `json:"page"`
-	Limit  int         `json:"limit"`
-	Offset int         `json:"offset"`
-	Start  int         `json:"start"`
-	Sort   []SortField `json:"sort"`
-	NextPageURL   string `json:"next_PageURL"`
-	PreviousPageURL   string `json:"prev_PageURL"`
+	Page            int         `json:"page"`
+	Limit           int         `json:"limit"`
+	Offset          int         `json:"offset"`
+	Start           int         `json:"start"`
+	Sort            []SortField `json:"sort"`
+	NextPageURL     string      `json:"next_PageURL"`
+	PreviousPageURL string      `json:"prev_PageURL"`
 }
 
 // go test -run Test_PaginateWithQueries
@@ -37,13 +37,13 @@ func Test_PaginateWithQueries(t *testing.T) {
 		}
 
 		return c.JSON(Response{
-			Page:   pageInfo.Page,
-			Limit:  pageInfo.Limit,
-			Offset: pageInfo.Offset,
-			Start:  pageInfo.Start(),
-			Sort:   pageInfo.Sort,
-			NextPageURL:   pageInfo.NextPageURL(c.BaseURL()),
-            PreviousPageURL:   pageInfo.PreviousPageURL(c.BaseURL()),
+			Page:            pageInfo.Page,
+			Limit:           pageInfo.Limit,
+			Offset:          pageInfo.Offset,
+			Start:           pageInfo.Start(),
+			Sort:            pageInfo.Sort,
+			NextPageURL:     pageInfo.NextPageURL(c.BaseURL()),
+			PreviousPageURL: pageInfo.PreviousPageURL(c.BaseURL()),
 		})
 	})
 
@@ -65,48 +65,47 @@ func Test_PaginateWithQueries(t *testing.T) {
 	utils.AssertEqual(t, 0, respBody.Offset)
 	utils.AssertEqual(t, 20, respBody.Start)
 	utils.AssertEqual(t, "http://example.com?page=3&limit=20", respBody.NextPageURL)
-    utils.AssertEqual(t, "http://example.com?page=1&limit=20", respBody.PreviousPageURL)
+	utils.AssertEqual(t, "http://example.com?page=1&limit=20", respBody.PreviousPageURL)
 	utils.AssertEqual(t, []SortField{{Field: "id", Order: ASC}}, respBody.Sort)
 }
 
-
 // go test -run TestPreviousAndNextPageURLMethods
 func TestPreviousAndNextPageURLMethods(t *testing.T) {
-    t.Parallel()
+	t.Parallel()
 
-    tests := []struct {
-        name           string
-        pageInfo       PageInfo
-        baseURL        string
-        expectedNext   string
-        expectedPrev   string
-    }{
-        {
-            name:           "Middle page",
-            pageInfo:       PageInfo{Page: 2, Limit: 10},
-            baseURL:        "https://example.com/users",
-            expectedNext:   "https://example.com/users?page=3&limit=10",
-            expectedPrev:   "https://example.com/users?page=1&limit=10",
-        },
-        {
-            name:           "First page",
-            pageInfo:       PageInfo{Page: 1, Limit: 20},
-            baseURL:        "https://example.com/users",
-            expectedNext:   "https://example.com/users?page=2&limit=20",
-            expectedPrev:   "",
-        },
-        // Add more test cases as needed
-    }
+	tests := []struct {
+		name         string
+		pageInfo     PageInfo
+		baseURL      string
+		expectedNext string
+		expectedPrev string
+	}{
+		{
+			name:         "Middle page",
+			pageInfo:     PageInfo{Page: 2, Limit: 10},
+			baseURL:      "https://example.com/users",
+			expectedNext: "https://example.com/users?page=3&limit=10",
+			expectedPrev: "https://example.com/users?page=1&limit=10",
+		},
+		{
+			name:         "First page",
+			pageInfo:     PageInfo{Page: 1, Limit: 20},
+			baseURL:      "https://example.com/users",
+			expectedNext: "https://example.com/users?page=2&limit=20",
+			expectedPrev: "",
+		},
+		// Add more test cases as needed
+	}
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            nextURL := tt.pageInfo.NextPageURL(tt.baseURL)
-            prevURL := tt.pageInfo.PreviousPageURL(tt.baseURL)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nextURL := tt.pageInfo.NextPageURL(tt.baseURL)
+			prevURL := tt.pageInfo.PreviousPageURL(tt.baseURL)
 
-            utils.AssertEqual(t, tt.expectedNext, nextURL)
-            utils.AssertEqual(t, tt.expectedPrev, prevURL)
-        })
-    }
+			utils.AssertEqual(t, tt.expectedNext, nextURL)
+			utils.AssertEqual(t, tt.expectedPrev, prevURL)
+		})
+	}
 }
 
 func Test_PaginateWithOffset(t *testing.T) {
@@ -508,116 +507,115 @@ func Test_PaginateWithMultipleSorting(t *testing.T) {
 
 // go test -run TestParseSortQuery
 func TestParseSortQuery(t *testing.T) {
-    tests := []struct {
-        name         string
-        query        string
-        allowedSorts []string
-        defaultSort  string
-        expected     []SortField
-    }{
-        {
-            name:         "Empty query",
-            query:        "",
-            allowedSorts: []string{"id", "name", "date"},
-            defaultSort:  "id",
-            expected:     []SortField{{Field: "id", Order: ASC}},
-        },
-        {
-            name:         "Single allowed field",
-            query:        "name",
-            allowedSorts: []string{"id", "name", "date"},
-            defaultSort:  "id",
-            expected:     []SortField{{Field: "name", Order: ASC}},
-        },
-        {
-            name:         "Multiple fields with mixed order",
-            query:        "name,-date,id",
-            allowedSorts: []string{"id", "name", "date"},
-            defaultSort:  "id",
-            expected: []SortField{
-                {Field: "name", Order: ASC},
-                {Field: "date", Order: DESC},
-                {Field: "id", Order: ASC},
-            },
-        },
-        {
-            name:         "Disallowed field",
-            query:        "email,name",
-            allowedSorts: []string{"id", "name", "date"},
-            defaultSort:  "id",
-            expected:     []SortField{{Field: "name", Order: ASC}},
-        },
-        {
-            name:         "All disallowed fields",
-            query:        "email,phone",
-            allowedSorts: []string{"id", "name", "date"},
-            defaultSort:  "id",
-            expected:     []SortField{{Field: "id", Order: ASC}},
-        },
-    }
+	tests := []struct {
+		name         string
+		query        string
+		allowedSorts []string
+		defaultSort  string
+		expected     []SortField
+	}{
+		{
+			name:         "Empty query",
+			query:        "",
+			allowedSorts: []string{"id", "name", "date"},
+			defaultSort:  "id",
+			expected:     []SortField{{Field: "id", Order: ASC}},
+		},
+		{
+			name:         "Single allowed field",
+			query:        "name",
+			allowedSorts: []string{"id", "name", "date"},
+			defaultSort:  "id",
+			expected:     []SortField{{Field: "name", Order: ASC}},
+		},
+		{
+			name:         "Multiple fields with mixed order",
+			query:        "name,-date,id",
+			allowedSorts: []string{"id", "name", "date"},
+			defaultSort:  "id",
+			expected: []SortField{
+				{Field: "name", Order: ASC},
+				{Field: "date", Order: DESC},
+				{Field: "id", Order: ASC},
+			},
+		},
+		{
+			name:         "Disallowed field",
+			query:        "email,name",
+			allowedSorts: []string{"id", "name", "date"},
+			defaultSort:  "id",
+			expected:     []SortField{{Field: "name", Order: ASC}},
+		},
+		{
+			name:         "All disallowed fields",
+			query:        "email,phone",
+			allowedSorts: []string{"id", "name", "date"},
+			defaultSort:  "id",
+			expected:     []SortField{{Field: "id", Order: ASC}},
+		},
+	}
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            result := parseSortQuery(tt.query, tt.allowedSorts, tt.defaultSort)
-            if !reflect.DeepEqual(result, tt.expected) {
-                t.Errorf("parseSortQuery() = %v, want %v", result, tt.expected)
-            }
-        })
-    }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := parseSortQuery(tt.query, tt.allowedSorts, tt.defaultSort)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("parseSortQuery() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
 }
-
 
 // Test_PaginateEdgeCases tests edge cases for the pagination middleware.
 //
 // Specifically, it tests that the middleware correctly handles:
-//  - Negative page numbers
-//  - Page numbers of 0
-//  - Negative limit numbers
-//  - Limits of 0
+//   - Negative page numbers
+//   - Page numbers of 0
+//   - Negative limit numbers
+//   - Limits of 0
 //
 // In each of these cases, the middleware should return a PageInfo with a page
 // number of 1 and a limit of 10 (the default limit).
 func Test_PaginateEdgeCases(t *testing.T) {
-    t.Parallel()
-    app := fiber.New()
+	t.Parallel()
+	app := fiber.New()
 
-    app.Use(New(Config{
-        DefaultSort: "id",
-        DefaultLimit: 10,  // Explicitly set the default limit to 10
-    }))
+	app.Use(New(Config{
+		DefaultSort:  "id",
+		DefaultLimit: 10, // Explicitly set the default limit to 10
+	}))
 
-    app.Get("/", func(c *fiber.Ctx) error {
-        pageInfo, ok := FromContext(c)
-        if !ok {
-            return fiber.ErrBadRequest
-        }
-        return c.JSON(pageInfo)
-    })
+	app.Get("/", func(c *fiber.Ctx) error {
+		pageInfo, ok := FromContext(c)
+		if !ok {
+			return fiber.ErrBadRequest
+		}
+		return c.JSON(pageInfo)
+	})
 
-    testCases := []struct {
-        name           string
-        url            string
-        expectedPage   int
-        expectedLimit  int
-    }{
-        {"Negative page", "/?page=-1", 1, 10},
-        {"Page zero", "/?page=0", 1, 10},
-        {"Negative limit", "/?limit=-10", 1, 10},
-        {"Limit zero", "/?limit=0", 1, 10},
-    }
+	testCases := []struct {
+		name          string
+		url           string
+		expectedPage  int
+		expectedLimit int
+	}{
+		{"Negative page", "/?page=-1", 1, 10},
+		{"Page zero", "/?page=0", 1, 10},
+		{"Negative limit", "/?limit=-10", 1, 10},
+		{"Limit zero", "/?limit=0", 1, 10},
+	}
 
-    for _, tc := range testCases {
-        t.Run(tc.name, func(t *testing.T) {
-            resp, err := app.Test(httptest.NewRequest("GET", tc.url, nil))
-            utils.AssertEqual(t, nil, err)
-            utils.AssertEqual(t, 200, resp.StatusCode)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp, err := app.Test(httptest.NewRequest("GET", tc.url, nil))
+			utils.AssertEqual(t, nil, err)
+			utils.AssertEqual(t, 200, resp.StatusCode)
 
-            var result PageInfo
-            utils.AssertEqual(t, nil, json.NewDecoder(resp.Body).Decode(&result))
-            utils.AssertEqual(t, tc.expectedPage, result.Page)
-            utils.AssertEqual(t, tc.expectedLimit, result.Limit)
-        })
-    }
+			var result PageInfo
+			utils.AssertEqual(t, nil, json.NewDecoder(resp.Body).Decode(&result))
+			utils.AssertEqual(t, tc.expectedPage, result.Page)
+			utils.AssertEqual(t, tc.expectedLimit, result.Limit)
+		})
+	}
 }
 
 /* BENCHMARK TESTING */
